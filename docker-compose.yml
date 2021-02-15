@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:1-alpine
+    container_name: ${APP_NAME}-php-nginx
+    ports:
+      - 8080:80
+    links:
+      - app
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+  app:
+    build:
+      context: ./docker/php
+      args:
+        APP_UID: ${APP_UID}
+    container_name: ${APP_NAME}-php-app
+    volumes:
+      - ~/.ssh:/home/app/.ssh # share SSH keys with container
+      - ./:/var/www
+    links:
+      - db
+
+  db:
+    image: postgres:10-alpine
+    container_name: ${APP_NAME}-php-db
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app

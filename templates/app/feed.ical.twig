@@ -1,0 +1,24 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+METHOD:PUBLISH
+PRODID:-//eastleigh.gov.uk//Bin Collection Dates//EN
+{% for timestamp, types in dates %}
+BEGIN:VEVENT
+DTSTART:{{ timestamp|date(icalFormat) }}
+DTEND:{{ timestamp|date(icalFormat) }}
+DTSTAMP:{{ 'now'|date(icalFormat) }}
+SUMMARY:Put out {{ types|join(", ") }}
+UID:eastleigh.gov.uk--{{ uprn }}--{{ timestamp }}
+STATUS:CONFIRMED
+LAST-MODIFIED:{{ 'now'|date(icalFormat) }}
+LOCATION:
+BEGIN:VALARM
+TRIGGER:-PT13H
+REPEAT:1
+DURATION:PT1H
+ACTION:DISPLAY
+DESCRIPTION:Put out {{ types|join(", ") }}
+END:VALARM
+END:VEVENT
+{% endfor %}
+END:VCALENDAR
