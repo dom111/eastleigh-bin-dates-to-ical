@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\PdfDownloader;
 use DateTime;
 use DateInterval;
+use DateTimeZone;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -82,8 +83,9 @@ class AppController extends AbstractController
                     $string .= $data[1];
 
                     if ($current !== null) {
-                        $date = new DateTime($string);
+                        $date = new DateTime($string, new DateTimeZone('UTC'));
 
+                        $date->setTimezone(new DateTimeZone('Europe/London'));
                         $date->setTime(7, 0);
 
                         // if we're parsing January in December we need to correct it.
