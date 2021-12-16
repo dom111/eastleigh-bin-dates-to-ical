@@ -4,8 +4,8 @@ METHOD:PUBLISH
 PRODID:-//eastleigh.gov.uk//Bin Collection Dates//EN
 {% for timestamp, types in dates %}
 BEGIN:VEVENT
-DTSTART:{{ timestamp|date(icalFormat) }}
-DTEND:{{ timestamp|date(icalFormat) }}
+DTSTART;TZID=Europe/London:{{ timestamp|date(icalFormat) }}
+DTEND;TZID=Europe/London:{{ timestamp|date(icalFormat) }}
 DTSTAMP:{{ 'now'|date(icalFormat) }}
 SUMMARY:Put out {{ types|join(", ") }}
 UID:eastleigh.gov.uk--{{ uprn }}--{{ timestamp }}

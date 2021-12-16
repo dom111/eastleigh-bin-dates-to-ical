@@ -38,7 +38,7 @@ class AppController extends AbstractController
     public function feed(string $uprn): Response
     {
         // Non-web testing:
-        // $url = __DIR__ . '/../../resources/bindates.pdf';
+//        $url = __DIR__ . '/../../resources/bindates.pdf';
         $url = 'https://wamp.eastleigh.gov.uk/getwastecalendar.aspx?UPRN=' . $uprn;
         $data = $this->downloader->parse($url);
 
@@ -51,14 +51,11 @@ class AppController extends AbstractController
                 if (strpos($data[1], 'Black Household') !== false) {
                     $current = 'household';
                 }
-                elseif (strpos($data[1], 'Green Recycling') !== false) {
-                    $current = 'recycling';
-                }
                 elseif (strpos($data[1], 'Glass Box') !== false) {
-                    $current = 'glass';
+                    $current = 'recycling, glass';
                 }
                 elseif (strpos($data[1], 'Garden') !== false) {
-                    $current = 'garden';
+                    $current = 'garden waste';
                 }
 
                 if (preg_match('/^[MTWFS]$/', $data[1])) {
@@ -85,20 +82,20 @@ class AppController extends AbstractController
                     if ($current !== null) {
                         $date = new DateTime($string, new DateTimeZone('UTC'));
 
-                        $date->setTimezone(new DateTimeZone('Europe/London'));
-                        $date->setTime(7, 0);
-
                         // if we're parsing January in December we need to correct it.
                         if ($date->getTimestamp() < time()) {
-                            $date->add(new DateInterval('P1Y'));
+                            $date = new DateTime($string . ' ' . (intval($date->format('Y')) + 1));
                         }
+
+                        $date->setTimezone(new DateTimeZone('Europe/London'));
+                        $date->setTime(7, 0);
 
                         $timestamp = $date->getTimestamp();
 
                         $dates[$timestamp] = $dates[$timestamp] ?? [];
-                        $dates[$timestamp][] = $current . ' waste';
+                        $dates[$timestamp][] = $current;
 
-                        if ($current === 'household' || $current === 'recycling') {
+                        if ($current === 'household' || $current === 'recycling, glass') {
                             $dates[$timestamp][] = 'food waste';
                         }
                     }
