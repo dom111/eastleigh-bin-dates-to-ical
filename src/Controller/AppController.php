@@ -46,6 +46,18 @@ class AppController extends AbstractController
         $current = null;
         $dates = [];
 
+        // TODO: eventually make this configurable or handled via URL params?
+        $reminders = [
+            'reminder' => [
+                'prefix' => 'Put out ',
+                'when' => '-PT6H',
+            ],
+            'collection' => [
+                'prefix' => 'Collecting ',
+                'when' => 'PT7H',
+            ],
+        ];
+
         foreach ($data->getPages() as $page) {
             foreach ($page->getDataTm() as $data) {
                 if (strpos($data[1], 'Black Household') !== false) {
@@ -88,15 +100,37 @@ class AppController extends AbstractController
                         }
 
                         $date->setTimezone(new DateTimeZone('Europe/London'));
-                        $date->setTime(7, 0);
 
-                        $timestamp = $date->getTimestamp();
+                        foreach ($reminders as $key => $reminder) {
+                            $reminderDate = clone $date;
 
-                        $dates[$timestamp] = $dates[$timestamp] ?? [];
-                        $dates[$timestamp][] = $current;
+                            if (! array_key_exists($key, $dates)) {
+                                $dates[$key] = array_merge([
+                                    'suffix' => ' waste',
+                                    'data' => [],
+                                ], $reminder);
+                            }
 
-                        if ($current === 'household' || $current === 'recycling, glass') {
-                            $dates[$timestamp][] = 'food waste';
+                            $reminderWhen = $reminder['when'];
+
+                            if ($reminderWhen[0] === '-') {
+                                $reminderDate->sub(new DateInterval(substr($reminderWhen, 1)));
+                            }
+                            else {
+                                $reminderDate->add(new DateInterval($reminderWhen));
+                            }
+
+                            $timestamp = $reminderDate->getTimestamp();
+
+                            if (!array_key_exists($timestamp, $dates[$key]['data'])) {
+                                $dates[$key]['data'][$timestamp] = [];
+                            }
+
+                            $dates[$key]['data'][$timestamp][] = $current;
+
+                            if ($current === 'household' || $current === 'recycling, glass') {
+                                $dates[$key]['data'][$timestamp][] = 'food';
+                            }
                         }
                     }
 
@@ -111,6 +145,7 @@ class AppController extends AbstractController
             'Content-Type' => 'text/calendar; charset=utf-8',
         ]);
 
+        // Not sure how necessary this is for Cloud providers?
         $response->setContent(str_replace("\n", "\r\n", $this->twig->render('app/feed.ical.twig', [
             'icalFormat' => 'Ymd\\THis\\Z',
             'uprn' => $uprn,
@@ -118,12 +153,5 @@ class AppController extends AbstractController
         ])));
 
         return $response;
-
-        // This replaces \r\n with \n...
-//        return $this->render('app/feed.ical.twig', [
-//            'icalFormat' => 'Ymd\\THis\\Z',
-//            'uprn' => $uprn,
-//            'dates' => $dates,
-//        ], $response);
     }
 }
