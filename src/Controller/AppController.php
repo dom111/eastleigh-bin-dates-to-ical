@@ -39,7 +39,8 @@ class AppController extends AbstractController
     {
         // Non-web testing:
 //        $url = __DIR__ . '/../../resources/bindates.pdf';
-        $url = 'https://wamp.eastleigh.gov.uk/getwastecalendar.aspx?UPRN=' . $uprn;
+        // $url = 'https://wamp.eastleigh.gov.uk/getwastecalendar.aspx?UPRN=' . $uprn;
+        $url = 'https://my.eastleigh.gov.uk/apex/EBC_Waste_Calendar?UPRN=' . $uprn;
         $data = $this->downloader->parse($url);
 
         $string = '';
