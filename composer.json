@@ -54,6 +54,10 @@
         "symfony/web-profiler-bundle": "^5.2"
     },
     "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "symfony/flex": true
+        },
         "optimize-autoloader": true,
         "preferred-install": {
             "*": "dist"

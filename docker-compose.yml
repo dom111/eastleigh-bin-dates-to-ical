@@ -5,12 +5,15 @@ services:
     image: nginx:1-alpine
     container_name: ${APP_NAME}-php-nginx
     ports:
-      - 8080:80
+      # Only reachable from the host; put the host's reverse proxy in front of it.
+      - 127.0.0.1:8080:80
     links:
       - app
     volumes:
-      - ./:/var/www
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    security_opt:
+      - no-new-privileges:true
 
   app:
     build:
@@ -19,8 +22,9 @@ services:
         APP_UID: ${APP_UID}
     container_name: ${APP_NAME}-php-app
     volumes:
-      - ~/.ssh:/home/app/.ssh # share SSH keys with container
       - ./:/var/www
+    security_opt:
+      - no-new-privileges:true
     links:
       - db
 

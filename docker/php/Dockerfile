@@ -2,15 +2,14 @@ FROM php:7-fpm-alpine
 
 ARG APP_UID
 
-RUN apk add sudo libzip-dev postgresql-dev \
-    && adduser -D -u $APP_UID -h /home/app app && echo 'app ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
+# No sudo for the app user: if PHP is compromised, it must not be able to become root.
+RUN apk add --no-cache libzip-dev postgresql-dev gnu-libiconv \
+    && adduser -D -u $APP_UID -h /home/app app \
     && docker-php-ext-install zip pdo_pgsql \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     ;
 
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ --allow-untrusted gnu-libiconv
-
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so php
+ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
 
 WORKDIR /var/www
 
