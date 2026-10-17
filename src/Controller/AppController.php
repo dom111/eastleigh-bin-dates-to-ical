@@ -8,12 +8,10 @@ use DateInterval;
 use DateTimeZone;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 
-/**
- * @Route("/", name="app-")
- */
+#[Route('/', name: 'app-')]
 class AppController extends AbstractController
 {
     private PdfDownloader $downloader;
@@ -28,13 +26,7 @@ class AppController extends AbstractController
         $this->twig = $twig;
     }
 
-    /**
-     * @Route(
-     *     "{uprn}.ics",
-     *     name="feed",
-     *     requirements={"uprn"="^\d{12}$"}
-     * )
-     */
+    #[Route('{uprn}.ics', name: 'feed', requirements: ['uprn' => '\d{12}'])]
     public function feed(string $uprn): Response
     {
         // Non-web testing:

@@ -1,15 +1,17 @@
-FROM php:7-fpm-alpine
+FROM composer:2 AS composer
+
+FROM php:8.4-fpm-alpine
 
 ARG APP_UID
 
 # No sudo for the app user: if PHP is compromised, it must not be able to become root.
-RUN apk add --no-cache libzip-dev postgresql-dev gnu-libiconv \
+# zip/unzip are only for Composer installing dist archives.
+RUN apk add --no-cache libzip-dev unzip \
+    && docker-php-ext-install zip opcache \
     && adduser -D -u $APP_UID -h /home/app app \
-    && docker-php-ext-install zip pdo_pgsql \
-    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
     ;
 
-ENV LD_PRELOAD /usr/lib/preloadable_libiconv.so
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www
 
